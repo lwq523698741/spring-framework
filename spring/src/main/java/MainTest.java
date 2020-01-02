@@ -1,17 +1,18 @@
 import com.sanza.config.Config;
+import com.sanza.dto.Bean1;
+import com.sanza.dto.Bean3;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 
 /**
  * @program: spring
  * @description:
  * @author: liuwenqi
- * @create: 2020-01-01 23:40
+ * @create: 2020-01-02 14:32
  **/
-public class test {
-
+public class MainTest {
 	public static void main(String[] args) {
-		System.out.println(1);
 		AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(Config.class);
-		System.out.println(context);
+		final Bean3 bean = context.getBean(Bean3.class);
+		System.out.println(bean);
 	}
 }

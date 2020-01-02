@@ -104,11 +104,14 @@ public class GenericApplicationContext extends AbstractApplicationContext implem
 
 
 	/**
-	 * Create a new GenericApplicationContext.
+	 * Create a new GenericApplicationContext.构建了 spring 的容器
 	 * @see #registerBeanDefinition
 	 * @see #refresh
 	 */
 	public GenericApplicationContext() {
+		//System.out.println("父类构造器构建了 spring 的容器");
+		//里面构建了  beanDefinitionMap 这个是bean描述对象的容器
+
 		this.beanFactory = new DefaultListableBeanFactory();
 	}
 
