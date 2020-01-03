@@ -154,7 +154,11 @@ abstract class ConfigurationClassUtils {
 			return false;
 		}
 
-		// Any of the typical annotations found?
+		// 该注解中是否有以下4中配置类,如果是就返回true
+		//"org.springframework.context.annotation.Import"
+		//"org.springframework.stereotype.Component"
+		//"org.springframework.context.annotation.ImportResource"
+		//"org.springframework.context.annotation.ComponentScan"
 		for (String indicator : candidateIndicators) {
 			if (metadata.isAnnotated(indicator)) {
 				return true;
