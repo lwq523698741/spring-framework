@@ -78,7 +78,7 @@ class ConditionEvaluator {
 	 * @return if the item should be skipped
 	 */
 	public boolean shouldSkip(@Nullable AnnotatedTypeMetadata metadata, @Nullable ConfigurationPhase phase) {
-		if (metadata == null || !metadata.isAnnotated(Conditional.class.getName())) {
+		if (metadata == null || !metadata.isAnnotated(Conditional.class.getName())) {//AnnotatedTypeMetadata
 			return false;
 		}
 

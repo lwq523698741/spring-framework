@@ -93,9 +93,9 @@ public class ClassPathScanningCandidateComponentProvider implements EnvironmentC
 	protected final Log logger = LogFactory.getLog(getClass());
 
 	private String resourcePattern = DEFAULT_RESOURCE_PATTERN;
-
+								// 包含过滤器 -> 拿来判断 只要类有注解在此包含过滤器中,就是应该可以被注入到容器中的 ,比如 @Component,这些要导入到容器中的对象,第一次被捞进来
 	private final List<TypeFilter> includeFilters = new LinkedList<>();
-
+								// 排除过滤器 -> 拿来判断,只要这个类有这个注解,就不如容器中,比如 @ComponentScan,这些之前就会被收集到了容器中,现在就排除掉
 	private final List<TypeFilter> excludeFilters = new LinkedList<>();
 
 	@Nullable
@@ -309,11 +309,11 @@ public class ClassPathScanningCandidateComponentProvider implements EnvironmentC
 	 * @return a corresponding Set of autodetected bean definitions
 	 */
 	public Set<BeanDefinition> findCandidateComponents(String basePackage) {
-		if (this.componentsIndex != null && indexSupportsIncludeFilters()) {
+		if (this.componentsIndex != null && indexSupportsIncludeFilters()) {  //查看是否支持索引
 			return addCandidateComponentsFromIndex(this.componentsIndex, basePackage);
 		}
 		else {
-			return scanCandidateComponents(basePackage);
+			return scanCandidateComponents(basePackage);  //扫描
 		}
 	}
 
@@ -413,12 +413,16 @@ public class ClassPathScanningCandidateComponentProvider implements EnvironmentC
 		return candidates;
 	}
 
+	/*
+		这个方法很关键,决定了是否将找到问类文件注入注入到Bean容器中
+	 */
 	private Set<BeanDefinition> scanCandidateComponents(String basePackage) {
 		Set<BeanDefinition> candidates = new LinkedHashSet<>();
 		try {
 			String packageSearchPath = ResourcePatternResolver.CLASSPATH_ALL_URL_PREFIX +
 					resolveBasePackage(basePackage) + '/' + this.resourcePattern;
-			Resource[] resources = getResourcePatternResolver().getResources(packageSearchPath);
+			//注解上下问使用的是 PathMatchingResourcePatternResolver
+			Resource[] resources = getResourcePatternResolver().getResources(packageSearchPath); //得到该配置类要扫描的文所有类文件
 			boolean traceEnabled = logger.isTraceEnabled();
 			boolean debugEnabled = logger.isDebugEnabled();
 			for (Resource resource : resources) {
@@ -428,6 +432,7 @@ public class ClassPathScanningCandidateComponentProvider implements EnvironmentC
 				if (resource.isReadable()) {
 					try {
 						MetadataReader metadataReader = getMetadataReaderFactory().getMetadataReader(resource);
+						//是否是候选组件,这里决定扫描出来的类文件是否添加到 BeanFactory中
 						if (isCandidateComponent(metadataReader)) {
 							ScannedGenericBeanDefinition sbd = new ScannedGenericBeanDefinition(metadataReader);
 							sbd.setResource(resource);
@@ -488,12 +493,12 @@ public class ClassPathScanningCandidateComponentProvider implements EnvironmentC
 	 * @return whether the class qualifies as a candidate component
 	 */
 	protected boolean isCandidateComponent(MetadataReader metadataReader) throws IOException {
-		for (TypeFilter tf : this.excludeFilters) {
+		for (TypeFilter tf : this.excludeFilters) {  //如果类型在排除过滤器中有,就返回false,不加到容器.具体可见 excludeFilters的定义,之前的配置类已经在其中了
 			if (tf.match(metadataReader, getMetadataReaderFactory())) {
 				return false;
 			}
 		}
-		for (TypeFilter tf : this.includeFilters) {
+		for (TypeFilter tf : this.includeFilters) {  //如果类型在包含过滤器中有,就返回true,不加到容器.具体可见 includeFilters
 			if (tf.match(metadataReader, getMetadataReaderFactory())) {
 				return isConditionMatch(metadataReader);
 			}

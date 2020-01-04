@@ -274,14 +274,20 @@ public class PathMatchingResourcePatternResolver implements ResourcePatternResol
 		return getResourceLoader().getResource(location);
 	}
 
+	/*
+		在平时的开发中,可以通过这个表达式获取到 classpath*:com/sanza/ 得到编译后源码路径下的文件夹的File对象,
+		PathMatchingResourcePatternResolver patternResolver = new PathMatchingResourcePatternResolver();
+		final Resource[] resource = patternResolver.getResources("classpath*:com/sanza/");
+		System.out.println(resource[0].getFile());
+	 */
 	@Override
 	public Resource[] getResources(String locationPattern) throws IOException {
 		Assert.notNull(locationPattern, "Location pattern must not be null");
 		if (locationPattern.startsWith(CLASSPATH_ALL_URL_PREFIX)) {
-			// a class path resource (multiple resources for same name possible)
+			// a class path resource (multiple resources for same name possible) /*
 			if (getPathMatcher().isPattern(locationPattern.substring(CLASSPATH_ALL_URL_PREFIX.length()))) {
 				// a class path resource pattern
-				return findPathMatchingResources(locationPattern);
+				return findPathMatchingResources(locationPattern); //得到配置目录下所有扫描到的文件
 			}
 			else {
 				// all class path resources with the given name
@@ -491,7 +497,8 @@ public class PathMatchingResourcePatternResolver implements ResourcePatternResol
 	protected Resource[] findPathMatchingResources(String locationPattern) throws IOException {
 		String rootDirPath = determineRootDir(locationPattern);
 		String subPattern = locationPattern.substring(rootDirPath.length());
-		Resource[] rootDirResources = getResources(rootDirPath);
+		//传入 classpath//:com.sanza 得到其真实的路径
+		Resource[] rootDirResources = getResources(rootDirPath);  //通过这个方法得到导入类定义的根(比如设定了com.sanza)的运行编译后代码所在文件夹
 		Set<Resource> result = new LinkedHashSet<>(16);
 		for (Resource rootDirResource : rootDirResources) {
 			rootDirResource = resolveRootDirResource(rootDirResource);
@@ -509,7 +516,7 @@ public class PathMatchingResourcePatternResolver implements ResourcePatternResol
 			else if (ResourceUtils.isJarURL(rootDirUrl) || isJarResource(rootDirResource)) {
 				result.addAll(doFindPathMatchingJarResources(rootDirResource, rootDirUrl, subPattern));
 			}
-			else {
+			else { //通过这个方法得到相关,根据引入的范围得到要导入类的 Resurce对象,这个对象可以获取该class的File对象
 				result.addAll(doFindPathMatchingFileResources(rootDirResource, subPattern));
 			}
 		}
@@ -712,7 +719,7 @@ public class PathMatchingResourcePatternResolver implements ResourcePatternResol
 			}
 			return Collections.emptySet();
 		}
-		return doFindMatchingFileSystemResources(rootDir, subPattern);
+		return doFindMatchingFileSystemResources(rootDir, subPattern); //递归向下找文件,但是需要验证根目录
 	}
 
 	/**
@@ -729,7 +736,7 @@ public class PathMatchingResourcePatternResolver implements ResourcePatternResol
 		if (logger.isTraceEnabled()) {
 			logger.trace("Looking for matching resources in directory tree [" + rootDir.getPath() + "]");
 		}
-		Set<File> matchingFiles = retrieveMatchingFiles(rootDir, subPattern);
+		Set<File> matchingFiles = retrieveMatchingFiles(rootDir, subPattern); //找到所有文件
 		Set<Resource> result = new LinkedHashSet<>(matchingFiles.size());
 		for (File file : matchingFiles) {
 			result.add(new FileSystemResource(file));
@@ -744,7 +751,7 @@ public class PathMatchingResourcePatternResolver implements ResourcePatternResol
 	 * @param pattern the pattern to match against,
 	 * relative to the root directory
 	 * @return a mutable Set of matching Resource instances
-	 * @throws IOException if directory contents could not be retrieved
+	 * @throws IOException if directory contents could not be retrieved 检查 root 文件夹,并找到文件夹下所有文件
 	 */
 	protected Set<File> retrieveMatchingFiles(File rootDir, String pattern) throws IOException {
 		if (!rootDir.exists()) {
@@ -774,11 +781,12 @@ public class PathMatchingResourcePatternResolver implements ResourcePatternResol
 		}
 		fullPattern = fullPattern + StringUtils.replace(pattern, File.separator, "/");
 		Set<File> result = new LinkedHashSet<>(8);
-		doRetrieveMatchingFiles(fullPattern, rootDir, result);
+		doRetrieveMatchingFiles(fullPattern, rootDir, result); //最后递归的找到所有文件,也就说可能该文件不一定需要放到容器中
 		return result;
 	}
 
 	/**
+	 * 找了半天终于找到了最底层的这个递归方法,Spring 通过这个递归方法将匹配到的文件进行返回
 	 * Recursively retrieve files that match the given pattern,
 	 * adding them to the given result list.
 	 * @param fullPattern the pattern to match against,
@@ -792,7 +800,7 @@ public class PathMatchingResourcePatternResolver implements ResourcePatternResol
 			logger.trace("Searching directory [" + dir.getAbsolutePath() +
 					"] for files matching pattern [" + fullPattern + "]");
 		}
-		for (File content : listDirectory(dir)) {
+		for (File content : listDirectory(dir)) { //递归得到其子文件夹
 			String currPath = StringUtils.replace(content.getAbsolutePath(), File.separator, "/");
 			if (content.isDirectory() && getPathMatcher().matchStart(fullPattern, currPath + "/")) {
 				if (!content.canRead()) {

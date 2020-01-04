@@ -67,7 +67,7 @@ public class AnnotationConfigApplicationContext extends GenericApplicationContex
 		super();
 		//解析 @Configuration
 		this.reader = new AnnotatedBeanDefinitionReader(this);
-		//提供API动态扫描注解
+		//提供API动态扫描注解器作为扫描器的实现类
 		this.scanner = new ClassPathBeanDefinitionScanner(this);
 	}
 
@@ -92,7 +92,7 @@ public class AnnotationConfigApplicationContext extends GenericApplicationContex
 		this();
 		//注册配置类
 		register(componentClasses);
-
+		//注册其他bean
 		refresh();
 	}
 

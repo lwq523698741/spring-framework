@@ -235,7 +235,7 @@ public class GenericApplicationContext extends AbstractApplicationContext implem
 		if (this.resourceLoader instanceof ResourcePatternResolver) {
 			return ((ResourcePatternResolver) this.resourceLoader).getResources(locationPattern);
 		}
-		return super.getResources(locationPattern);
+		return super.getResources(locationPattern); //获取到所有扫描到的文件
 	}
 
 	@Override

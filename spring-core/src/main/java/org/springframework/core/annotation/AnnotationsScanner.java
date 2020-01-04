@@ -491,12 +491,12 @@ abstract class AnnotationsScanner {
 
 	static Annotation[] getDeclaredAnnotations(AnnotatedElement source, boolean defensive) {
 		boolean cached = false;
-		Annotation[] annotations = declaredAnnotationCache.get(source);
+		Annotation[] annotations = declaredAnnotationCache.get(source);  //在这里得到了 配置类的注解
 		if (annotations != null) {
 			cached = true;
 		}
 		else {
-			annotations = source.getDeclaredAnnotations();
+			annotations = source.getDeclaredAnnotations(); //反射得到所有注解
 			if (annotations.length != 0) {
 				boolean allIgnored = true;
 				for (int i = 0; i < annotations.length; i++) {

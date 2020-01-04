@@ -19,11 +19,11 @@ public class BeforeBeanDefinitionRegistryPostProcessor implements BeanDefinition
 	@Override
 	public void postProcessBeanDefinitionRegistry(BeanDefinitionRegistry registry) throws BeansException {
 
-		System.out.println(registry);
+		//System.out.println(registry);
 	}
 
 	@Override
 	public void postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory) throws BeansException {
-		System.out.println(beanFactory);
+		//System.out.println(beanFactory);
 	}
 }

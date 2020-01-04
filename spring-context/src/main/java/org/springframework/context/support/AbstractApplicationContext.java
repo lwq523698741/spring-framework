@@ -530,8 +530,9 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 
 
 				// Invoke factory processors registered as beans in the context.
-				//完成了扫描与解析了 后置处理类 ,包括其拓展类
-				//同时将其他所有标识进容器的类放入容器中,并执行了后置处理器
+				//完成了扫描与解析了 bean工厂后置处理类 ,包括其拓展类
+				//其中一个ConfigurationClassPostProcessor的后置处理类的拓展类 将其他所有标识进容器的类放入容器中
+				// 并执行了后置处理器
 				invokeBeanFactoryPostProcessors(beanFactory);
 
 				// Register bean processors that intercept bean creation.
@@ -707,7 +708,7 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 	 */
 	protected void invokeBeanFactoryPostProcessors(ConfigurableListableBeanFactory beanFactory) {
 		//1 根据配置类 将需要导入的所有配置类导入容器中
-		// 排序 与 放入 BeanFactoryPostProcessors 到执行器中
+		// 排序 与 放入 BeanFactoryPostProcessors 到执行器中执行
 		PostProcessorRegistrationDelegate.invokeBeanFactoryPostProcessors(beanFactory, getBeanFactoryPostProcessors());
 
 		// Detect a LoadTimeWeaver and prepare for weaving, if found in the meantime
