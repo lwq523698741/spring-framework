@@ -37,6 +37,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.function.Supplier;
 
+import com.sun.org.apache.xml.internal.security.Init;
 import org.apache.commons.logging.Log;
 
 import org.springframework.beans.BeanUtils;
@@ -486,7 +487,7 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 		// Make sure bean class is actually resolved at this point, and
 		// clone the bean definition in case of a dynamically resolved Class
 		// which cannot be stored in the shared merged bean definition.
-		Class<?> resolvedClass = resolveBeanClass(mbd, beanName);
+		Class<?> resolvedClass = resolveBeanClass(mbd, beanName); //获取类的class定义
 		if (resolvedClass != null && !mbd.hasBeanClass() && mbd.getBeanClassName() != null) {
 			mbdToUse = new RootBeanDefinition(mbd);
 			mbdToUse.setBeanClass(resolvedClass);
@@ -513,8 +514,8 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 					"BeanPostProcessor before instantiation of bean failed", ex);
 		}
 
-		try {
-			Object beanInstance = doCreateBean(beanName, mbdToUse, args);
+		try { //实例化倒数第八
+			Object beanInstance = doCreateBean(beanName, mbdToUse, args); //这里创建Bean
 			if (logger.isTraceEnabled()) {
 				logger.trace("Finished creating instance of bean '" + beanName + "'");
 			}
@@ -554,6 +555,7 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 			instanceWrapper = this.factoryBeanInstanceCache.remove(beanName);
 		}
 		if (instanceWrapper == null) {
+			//实例化倒数第七 此处继续创建Bean的实例,Bean 调用了 Bean的构造器,实例化了对象,后续的方法执行了其Aware Init方法
 			instanceWrapper = createBeanInstance(beanName, mbd, args);
 		}
 		final Object bean = instanceWrapper.getWrappedInstance();
@@ -592,6 +594,7 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 		Object exposedObject = bean;
 		try {
 			populateBean(beanName, mbd, instanceWrapper);
+			//这里初始化被调用了相关 Aware Init 方法
 			exposedObject = initializeBean(beanName, exposedObject, mbd);
 		}
 		catch (Throwable ex) {
@@ -1190,17 +1193,17 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 		}
 		if (resolved) {
 			if (autowireNecessary) {
-				return autowireConstructor(beanName, mbd, null, null);
+				return autowireConstructor(beanName, mbd, null, null); //自动注入构造器
 			}
 			else {
 				return instantiateBean(beanName, mbd);
 			}
 		}
 
-		// Candidate constructors for autowiring?
+		// //获取构造器,并判断是否使用自动装填构造器 Candidate constructors for autowiring?
 		Constructor<?>[] ctors = determineConstructorsFromBeanPostProcessors(beanClass, beanName);
-		if (ctors != null || mbd.getResolvedAutowireMode() == AUTOWIRE_CONSTRUCTOR ||
-				mbd.hasConstructorArgumentValues() || !ObjectUtils.isEmpty(args)) {
+		//实例化倒数第六 这里面如果发现构造器中存在有 依赖注入的Bean,那么会先去查看有无这个Bean,并创建这个Bean调用构造器
+		if (ctors != null || mbd.getResolvedAutowireMode() == AUTOWIRE_CONSTRUCTOR || mbd.hasConstructorArgumentValues() || !ObjectUtils.isEmpty(args)) {
 			return autowireConstructor(beanName, mbd, ctors, args);
 		}
 
@@ -1354,8 +1357,8 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 	 */
 	protected BeanWrapper autowireConstructor(
 			String beanName, RootBeanDefinition mbd, @Nullable Constructor<?>[] ctors, @Nullable Object[] explicitArgs) {
-
-		return new ConstructorResolver(this).autowireConstructor(beanName, mbd, ctors, explicitArgs);
+		//通过反射构造器 实例化对象, 倒数第 五
+		return new ConstructorResolver(this).autowireConstructor(beanName, mbd, ctors, explicitArgs); //继续向下
 	}
 
 	/**
@@ -1779,16 +1782,26 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 				return null;
 			}, getAccessControlContext());
 		}
-		else {
+		else { //这里不是执行一般Aware方法的地方
 			invokeAwareMethods(beanName, bean);
 		}
 
 		Object wrappedBean = bean;
 		if (mbd == null || !mbd.isSynthetic()) {
+			//这里执行了
+			// BeanPostProcessor接口的 后置方法 postProcessBeforeInitialization
+			//	实现类 ApplicationContextAwareProcessor 执行了Aware
+			//  实现类 CommonAnnotationBeanPostProcessor 执行了 @PostConstruct接口
+			//里面 和 @PostConstruct接口
 			wrappedBean = applyBeanPostProcessorsBeforeInitialization(wrappedBean, beanName);
 		}
+		/**
+		 * 实现 BeanPostProcessor接口 与 实现 InitializingBean的用法
+		 *	BeanPostProcessor接口 可以用于框架实现,对Bean进行批处理,
+		 *	InitializingBean的用法适合用于方法初始化
+		 */
 
-		try {
+		try {//执行了 InitializingBean 的方法
 			invokeInitMethods(beanName, wrappedBean, mbd);
 		}
 		catch (Throwable ex) {

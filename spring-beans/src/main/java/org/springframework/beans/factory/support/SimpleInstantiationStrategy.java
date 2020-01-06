@@ -114,7 +114,7 @@ public class SimpleInstantiationStrategy implements InstantiationStrategy {
 					return null;
 				});
 			}
-			return BeanUtils.instantiateClass(ctor, args);
+			return BeanUtils.instantiateClass(ctor, args); //倒数第二反射方法
 		}
 		else {
 			return instantiateWithMethodInjection(bd, beanName, owner, ctor, args);

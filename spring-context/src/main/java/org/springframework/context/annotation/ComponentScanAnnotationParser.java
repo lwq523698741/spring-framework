@@ -92,12 +92,12 @@ class ComponentScanAnnotationParser {
 		}
         //获取 这个注解 componentScan 属性定义的扫描正则,根据这个正则得到范围
 		scanner.setResourcePattern(componentScan.getString("resourcePattern"));
-
+		//查找该配置类的注解使用的 includeFilters,如果有就将该配置类注入容器中
 		for (AnnotationAttributes filter : componentScan.getAnnotationArray("includeFilters")) {
 			for (TypeFilter typeFilter : typeFiltersFor(filter)) {
 				scanner.addIncludeFilter(typeFilter);
 			}
-		}
+		}//查找该配置类的注解使用的 excludeFilters,如果有就将该配置类排除容器
 		for (AnnotationAttributes filter : componentScan.getAnnotationArray("excludeFilters")) {
 			for (TypeFilter typeFilter : typeFiltersFor(filter)) {
 				scanner.addExcludeFilter(typeFilter);

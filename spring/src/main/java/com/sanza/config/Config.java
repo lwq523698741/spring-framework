@@ -8,6 +8,6 @@ import org.springframework.context.annotation.ComponentScan;
  * @author: liuwenqi
  * @create: 2020-01-01 23:43
  **/
-@ComponentScan("com.sanza")
+@ComponentScan(value = "com.sanza")
 public class Config {
 }

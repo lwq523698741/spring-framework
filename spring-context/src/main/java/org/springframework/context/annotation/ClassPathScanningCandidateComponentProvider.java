@@ -313,7 +313,7 @@ public class ClassPathScanningCandidateComponentProvider implements EnvironmentC
 			return addCandidateComponentsFromIndex(this.componentsIndex, basePackage);
 		}
 		else {
-			return scanCandidateComponents(basePackage);  //扫描
+			return scanCandidateComponents(basePackage);  //不支持索引的扫描这里
 		}
 	}
 
@@ -437,7 +437,7 @@ public class ClassPathScanningCandidateComponentProvider implements EnvironmentC
 							ScannedGenericBeanDefinition sbd = new ScannedGenericBeanDefinition(metadataReader);
 							sbd.setResource(resource);
 							sbd.setSource(resource);
-							if (isCandidateComponent(sbd)) {
+							if (isCandidateComponent(sbd)) { //判断类是不是具体类,进去看注释
 								if (debugEnabled) {
 									logger.debug("Identified candidate component class: " + resource);
 								}
@@ -530,8 +530,12 @@ public class ClassPathScanningCandidateComponentProvider implements EnvironmentC
 	 */
 	protected boolean isCandidateComponent(AnnotatedBeanDefinition beanDefinition) {
 		AnnotationMetadata metadata = beanDefinition.getMetadata();
-		return (metadata.isIndependent() && (metadata.isConcrete() ||
-				(metadata.isAbstract() && metadata.hasAnnotatedMethods(Lookup.class.getName()))));
+		//      判断该类是不是正常的类或者静态内部类
+		//      				|					是不是正常的类,排除接口与抽象类
+		//						|						|
+		//						|						|
+		//						|						|						如果是抽象类,但是这个类有注解叫做Lookup,那么就可以放入容器中
+		return (metadata.isIndependent() && (metadata.isConcrete() || (metadata.isAbstract() && metadata.hasAnnotatedMethods(Lookup.class.getName()))));
 	}
 
 

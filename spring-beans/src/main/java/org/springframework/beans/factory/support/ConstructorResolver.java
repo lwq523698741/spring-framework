@@ -225,6 +225,7 @@ class ConstructorResolver {
 								paramNames = pnd.getParameterNames(candidate);
 							}
 						}
+						//这个方法创建了依赖的Bean
 						argsHolder = createArgumentArray(beanName, mbd, resolvedValues, bw, paramTypes, paramNames,
 								getUserDeclaredConstructor(candidate), autowiring, candidates.length == 1);
 					}
@@ -292,7 +293,8 @@ class ConstructorResolver {
 		}
 
 		Assert.state(argsToUse != null, "Unresolved constructor arguments");
-		bw.setBeanInstance(instantiate(beanName, mbd, constructorToUse, argsToUse));
+		//这里实例化了Bean
+		bw.setBeanInstance(instantiate(beanName, mbd, constructorToUse, argsToUse)); //用了反射 倒数第四
 		return bw;
 	}
 
@@ -307,7 +309,7 @@ class ConstructorResolver {
 						this.beanFactory.getAccessControlContext());
 			}
 			else {
-				return strategy.instantiate(mbd, beanName, this.beanFactory, constructorToUse, argsToUse);
+				return strategy.instantiate(mbd, beanName, this.beanFactory, constructorToUse, argsToUse); //倒数第三
 			}
 		}
 		catch (Throwable ex) {
@@ -785,7 +787,7 @@ class ConstructorResolver {
 							"Ambiguous argument values for parameter of type [" + paramType.getName() +
 							"] - did you specify the correct bean references as arguments?");
 				}
-				try {
+				try {//这里创建了被 依赖注入的Bean
 					Object autowiredArgument = resolveAutowiredArgument(
 							methodParam, beanName, autowiredBeanNames, converter, fallback);
 					args.rawArguments[paramIndex] = autowiredArgument;
@@ -881,9 +883,9 @@ class ConstructorResolver {
 			}
 			return injectionPoint;
 		}
-		try {
+		try {//继续创建被依赖的Bean
 			return this.beanFactory.resolveDependency(
-					new DependencyDescriptor(param, true), beanName, autowiredBeanNames, typeConverter);
+					new DependencyDescriptor(param, true), beanName, autowiredBeanNames, typeConverter); //依赖描述符
 		}
 		catch (NoUniqueBeanDefinitionException ex) {
 			throw ex;

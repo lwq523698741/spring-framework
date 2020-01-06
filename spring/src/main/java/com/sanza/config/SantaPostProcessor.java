@@ -25,8 +25,8 @@ public class SantaPostProcessor implements BeanFactoryPostProcessor {
 	 */
 	@Override
 	public void postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory) throws BeansException {
-		final AbstractBeanDefinition bean1Definition = (AbstractBeanDefinition) beanFactory.getBeanDefinition("bean1");
-		bean1Definition.setBeanClass(Bean3.class);
+		//final AbstractBeanDefinition bean1Definition = (AbstractBeanDefinition) beanFactory.getBeanDefinition("bean1");
+		//bean1Definition.setBeanClass(Bean3.class);
 	}
 
 }

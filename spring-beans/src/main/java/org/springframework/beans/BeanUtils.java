@@ -197,7 +197,7 @@ public abstract class BeanUtils {
 						argsWithDefaultValues[i] = args[i];
 					}
 				}
-				return ctor.newInstance(argsWithDefaultValues);
+				return ctor.newInstance(argsWithDefaultValues); //最后的反射方法
 			}
 		}
 		catch (InstantiationException ex) {
