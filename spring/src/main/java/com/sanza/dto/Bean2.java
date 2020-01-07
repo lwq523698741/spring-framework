@@ -19,8 +19,11 @@ import javax.annotation.PreDestroy;
 @Component
 public class Bean2 implements ApplicationContextAware, InitializingBean, DisposableBean {
 
-	public Bean2() {
+	Bean1 bean1;
+
+	public Bean2(Bean1 bean1) {
 		System.out.println("Bean2 构造器");
+		this.bean1 = bean1;
 	}
 
 	@Override
