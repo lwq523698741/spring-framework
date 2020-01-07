@@ -20,13 +20,13 @@ import javax.annotation.PreDestroy;
 @Component
 public class Bean1 implements ApplicationContextAware, InitializingBean, DisposableBean {
 
-	//@Autowired
+	@Autowired
 	Bean2 bean2;
 
-	public Bean1(Bean2 bean2) {
+	/*public Bean1(Bean2 bean2) {
 		System.out.println("Bean1的构造器");
 		this.bean2 = bean2;
-	}
+	}*/
 
 	@Override
 	public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
@@ -54,9 +54,14 @@ public class Bean1 implements ApplicationContextAware, InitializingBean, Disposa
 		System.out.println("Bean1 DisposableBean 接口销毁方法");
 	}
 
-	/*public Bean1() {
+
+	public void ioc () {
+		System.out.println("this is ioc");
+	}
+
+	public Bean1() {
 		System.out.println("Bean1的构造器");
-	}*/
+	}
 
 	@Override
 	public String toString() {

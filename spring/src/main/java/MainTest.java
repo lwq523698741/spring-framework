@@ -21,8 +21,8 @@ public class MainTest {
 
 	public static void main(String[] args) throws IOException {
 		AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(Config.class);
-		final Bean1 bean = context.getBean(Bean1.class);
-		System.out.println(bean);
+		final Bean2 bean = context.getBean(Bean2.class);
+		bean.ioc();
 
 
 	}

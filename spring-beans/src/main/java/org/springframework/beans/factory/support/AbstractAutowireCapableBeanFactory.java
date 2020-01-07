@@ -60,6 +60,7 @@ import org.springframework.beans.factory.BeanNameAware;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.InjectionPoint;
+import org.springframework.beans.factory.ObjectFactory;
 import org.springframework.beans.factory.UnsatisfiedDependencyException;
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.beans.factory.config.AutowiredPropertyMarker;
@@ -586,15 +587,22 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 		// 立即缓存单例，以便能够解析循环引用 Eagerly cache singletons to be able to resolve circular references
 		// 即由BeanFactoryAware之类的生命周期接口触发。 even when triggered by lifecycle interfaces like BeanFactoryAware.
 		//判断是否允许循环依赖
-		boolean earlySingletonExposure = (mbd.isSingleton() && this.allowCircularReferences &&
-				isSingletonCurrentlyInCreation(beanName));
+		boolean earlySingletonExposure = (mbd.isSingleton() && this.allowCircularReferences && isSingletonCurrentlyInCreation(beanName));
 		if (earlySingletonExposure) {
 			if (logger.isTraceEnabled()) {
-				logger.trace("Eagerly caching bean '" + beanName +
-						"' to allow for resolving potential circular references");
+				logger.trace("Eagerly caching bean '" + beanName + "' to allow for resolving potential circular references");
 			}
-			//将Bean放入到Map中进行提前暴露
-			addSingletonFactory(beanName, () -> getEarlyBeanReference(beanName, mbd, bean));
+			// 为了解决循环依赖,将对象封装到一个工厂方法中,然后
+			// 放入到一个Map<String,工厂>中进行提前暴露,但此时,这个对象的依赖还是光的,其对象的依赖还没有完成注入,为什么要放到工厂包裹一层
+			// 因为getEarlyBeanReference() 中提供了 PostProcess 可以对对象进行处理,比如为循环依赖的类实现 IOC 的功能,为什么循环依赖的类的IOC代理生成要放在这里,
+			// 是因为循环依赖又要实现代理的类在 他们的代码设计中走不到下面的 initializeBean ,但是装填到 三级缓存 中的应该是一个代理对象,而不是一个普通Bean
+			// IOC的实现先交给 AnnotationAwareAspectJAutoProxyCreator的父父父类 AbstractAutoProxyCreator ,如果对象实现了 IOC 那么将实现代理对象包装原对象
+			addSingletonFactory(beanName, new ObjectFactory(){ //原版代码的 Lambert 表达式不够直白
+				@Override
+				public Object getObject() throws BeansException {
+					return getEarlyBeanReference(beanName, mbd, bean);
+				}
+			});
 		}
 
 		// Initialize the bean instance.
@@ -603,7 +611,7 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 			//属性填充
 			populateBean(beanName, mbd, instanceWrapper);
 			//这里初始化被调用了相关 Aware Init 方法
-			// IOC 代理方法就是在这里调用的
+			// 正常对象的 IOC 代理对象就是在这里生成的
 			exposedObject = initializeBean(beanName, exposedObject, mbd);
 		}
 		catch (Throwable ex) {
@@ -961,6 +969,7 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 	}
 
 	/**
+	 * 解决循环依赖的关键步骤是返回一个工厂方法包裹的 未初始化完全的 Bean
 	 * Obtain a reference for early access to the specified bean,
 	 * typically for the purpose of resolving a circular reference.
 	 * @param beanName the name of the bean (for error handling purposes)
@@ -973,6 +982,10 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 		if (!mbd.isSynthetic() && hasInstantiationAwareBeanPostProcessors()) {
 			for (BeanPostProcessor bp : getBeanPostProcessors()) {
 				if (bp instanceof SmartInstantiationAwareBeanPostProcessor) {
+					//实现 IOC 的类称之为 AnnotationAwareAspectJAutoProxyCreator
+					// 						的父类的 AspectJAwareAdvisorAutoProxyCreator
+					// 						的父类 AbstractAdvisorAutoProxyCreator
+					// 						的父类 AbstractAutoProxyCreator 实现了 SmartInstantiationAwareBeanPostProcessor 类,
 					SmartInstantiationAwareBeanPostProcessor ibp = (SmartInstantiationAwareBeanPostProcessor) bp;
 					exposedObject = ibp.getEarlyBeanReference(exposedObject, beanName);
 				}
@@ -1431,12 +1444,12 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 			for (BeanPostProcessor bp : getBeanPostProcessors()) {
 				if (bp instanceof InstantiationAwareBeanPostProcessor) {
 					InstantiationAwareBeanPostProcessor ibp = (InstantiationAwareBeanPostProcessor) bp;
-					PropertyValues pvsToUse = ibp.postProcessProperties(pvs, bw.getWrappedInstance(), beanName);
+					PropertyValues pvsToUse = ibp.postProcessProperties(pvs, bw.getWrappedInstance(), beanName); //set方式的依赖注入 AutowiredAnnotationBeanPostProcessor 继续往下
 					if (pvsToUse == null) {
 						if (filteredPds == null) {
 							filteredPds = filterPropertyDescriptorsForDependencyCheck(bw, mbd.allowCaching);
 						}
-						pvsToUse = ibp.postProcessPropertyValues(pvs, filteredPds, bw.getWrappedInstance(), beanName);  //继续往下
+						pvsToUse = ibp.postProcessPropertyValues(pvs, filteredPds, bw.getWrappedInstance(), beanName);
 						if (pvsToUse == null) {
 							return;
 						}
@@ -1798,7 +1811,7 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 		Object wrappedBean = bean;
 		if (mbd == null || !mbd.isSynthetic()) {
 			//这里执行了
-			// BeanPostProcessor接口的 后置方法 postProcessBeforeInitialization
+			// BeanPostProcessor接口的 之前方法 postProcessBeforeInitialization
 			//	实现类 ApplicationContextAwareProcessor 执行了Aware
 			//  实现类 CommonAnnotationBeanPostProcessor 执行了 @PostConstruct接口
 			//里面 和 @PostConstruct接口

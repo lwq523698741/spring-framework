@@ -3,6 +3,7 @@ package com.sanza.dto;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.InitializingBean;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.stereotype.Component;
@@ -19,11 +20,16 @@ import javax.annotation.PreDestroy;
 @Component
 public class Bean2 implements ApplicationContextAware, InitializingBean, DisposableBean {
 
+	@Autowired
 	Bean1 bean1;
 
-	public Bean2(Bean1 bean1) {
+	/*public Bean2(Bean1 bean1) {
 		System.out.println("Bean2 构造器");
 		this.bean1 = bean1;
+	}*/
+
+	public Bean2() {
+		System.out.println("Bean2 构造器");
 	}
 
 	@Override
@@ -51,4 +57,9 @@ public class Bean2 implements ApplicationContextAware, InitializingBean, Disposa
 	public void destroy() throws Exception {
 		System.out.println("Bean2 DisposableBean 接口销毁方法");
 	}
+
+	public void ioc () {
+		System.out.println("this is ioc");
+	}
+
 }

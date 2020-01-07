@@ -878,8 +878,8 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 						}
 					}
 				}
-				else {
-					getBean(beanName);  // //实例化倒数第十一 一般的 Bean 开始实例化Bean,并执行初始化方法
+				else { //这个getBean是很强大的封装,如果没有Bean就获取构造器并实例化,如果需要加IOC代理方法就加,如果然后存到 缓存中
+					getBean(beanName);  // //实例化倒数第十一 一般的 Bean 开始实例化Bean
 				}
 			}
 		}
