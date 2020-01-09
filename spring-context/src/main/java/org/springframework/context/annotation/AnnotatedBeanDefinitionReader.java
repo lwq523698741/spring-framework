@@ -126,6 +126,7 @@ public class AnnotatedBeanDefinitionReader {
 
 
 	/**
+	 * 可以动态的添加类到Spring中
 	 * Register one or more component classes to be processed.
 	 * <p>Calls to {@code register} are idempotent; adding the same
 	 * component class more than once has no additional effect.

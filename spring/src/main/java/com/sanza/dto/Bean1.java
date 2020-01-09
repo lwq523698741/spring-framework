@@ -18,7 +18,7 @@ import javax.annotation.PreDestroy;
  * @create: 2020-01-02 14:34
  **/
 @Component
-public class Bean1 implements ApplicationContextAware, InitializingBean, DisposableBean {
+public class Bean1  {
 
 	@Autowired
 	Bean2 bean2;
@@ -28,7 +28,7 @@ public class Bean1 implements ApplicationContextAware, InitializingBean, Disposa
 		this.bean2 = bean2;
 	}*/
 
-	@Override
+	/*@Override
 	public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
 		System.out.println("Bean1 ApplicationContextAware 接口调用");
 	}
@@ -53,7 +53,7 @@ public class Bean1 implements ApplicationContextAware, InitializingBean, Disposa
 	public void destroy() throws Exception {
 		System.out.println("Bean1 DisposableBean 接口销毁方法");
 	}
-
+*/
 
 	public void ioc () {
 		System.out.println("this is ioc");

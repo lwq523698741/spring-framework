@@ -37,6 +37,7 @@ import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
+import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.BeanFactoryPostProcessor;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.beans.support.ResourceEditorRegistrar;
@@ -516,9 +517,11 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 	public void refresh() throws BeansException, IllegalStateException {
 		synchronized (this.startupShutdownMonitor) {
 			// Prepare(准备) this context for refreshing(刷新).
+			//对一些标志位进行了清空
 			prepareRefresh();
 
 			// Tell(通知) the subclass to refresh the (内部)internal bean factory.
+			// DefaultListableBeanFactory
 			ConfigurableListableBeanFactory beanFactory = obtainFreshBeanFactory();
 
 			// (准备)Prepare the bean factory for use in this context.
@@ -535,7 +538,7 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 				// 并执行了后置处理器
 				invokeBeanFactoryPostProcessors(beanFactory);
 
-				// 注册Bean后置处理器 Register bean processors that intercept bean creation.
+				// 因为后置处理器也是通过被注解扫描器放到 注册Bean后置处理器 Register bean processors that intercept bean creation.
 				registerBeanPostProcessors(beanFactory);
 
 				// Initialize message source for this context.
@@ -552,6 +555,8 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 
 				// Instantiate all remaining (non-lazy-init) singletons.
 				//开始实例化单例的类,不含懒加载的
+				beanFactory.getBeanDefinition("config");
+
 				finishBeanFactoryInitialization(beanFactory);
 
 				// Last step: publish corresponding event.

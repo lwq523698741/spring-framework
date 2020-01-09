@@ -458,7 +458,7 @@ class ConstructorResolver {
 			List<Method> candidates = null;
 			if (mbd.isFactoryMethodUnique) {
 				if (factoryMethodToUse == null) {
-					factoryMethodToUse = mbd.getResolvedFactoryMethod();
+					factoryMethodToUse = mbd.getResolvedFactoryMethod(); //获取该Bean的唯一工厂构造器
 				}
 				if (factoryMethodToUse != null) {
 					candidates = Collections.singletonList(factoryMethodToUse);
@@ -476,14 +476,14 @@ class ConstructorResolver {
 
 			if (candidates.size() == 1 && explicitArgs == null && !mbd.hasConstructorArgumentValues()) {
 				Method uniqueCandidate = candidates.get(0);
-				if (uniqueCandidate.getParameterCount() == 0) {
+				if (uniqueCandidate.getParameterCount() == 0) { //如果没有参数
 					mbd.factoryMethodToIntrospect = uniqueCandidate;
 					synchronized (mbd.constructorArgumentLock) {
 						mbd.resolvedConstructorOrFactoryMethod = uniqueCandidate;
 						mbd.constructorArgumentsResolved = true;
 						mbd.resolvedConstructorArguments = EMPTY_ARGS;
 					}
-					bw.setBeanInstance(instantiate(beanName, mbd, factoryBean, uniqueCandidate, EMPTY_ARGS));
+					bw.setBeanInstance(instantiate(beanName, mbd, factoryBean, uniqueCandidate, EMPTY_ARGS)); //通过反射执行得到 @Bean 方法的调用结果
 					return bw;
 				}
 			}
@@ -639,8 +639,8 @@ class ConstructorResolver {
 		return bw;
 	}
 
-	private Object instantiate(String beanName, RootBeanDefinition mbd,
-			@Nullable Object factoryBean, Method factoryMethod, Object[] args) {
+	private Object instantiate(String beanName, RootBeanDefinition mbd, @Nullable Object factoryBean, Method factoryMethod, Object[] args) {
+
 
 		try {
 			if (System.getSecurityManager() != null) {
@@ -649,7 +649,7 @@ class ConstructorResolver {
 								mbd, beanName, this.beanFactory, factoryBean, factoryMethod, args),
 						this.beanFactory.getAccessControlContext());
 			}
-			else {
+			else {						//获取实例化策略
 				return this.beanFactory.getInstantiationStrategy().instantiate(
 						mbd, beanName, this.beanFactory, factoryBean, factoryMethod, args);
 			}

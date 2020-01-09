@@ -35,6 +35,7 @@ import org.springframework.beans.factory.support.BeanDefinitionRegistryPostProce
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.beans.factory.support.MergedBeanDefinitionPostProcessor;
 import org.springframework.beans.factory.support.RootBeanDefinition;
+import org.springframework.context.annotation.ConfigurationClassPostProcessor;
 import org.springframework.core.OrderComparator;
 import org.springframework.core.Ordered;
 import org.springframework.core.PriorityOrdered;
@@ -60,6 +61,7 @@ final class PostProcessorRegistrationDelegate {
 			2.后面执行了 Bean定义的工厂后置处理器类 的模板方法
 
 	 */
+
 	public static void invokeBeanFactoryPostProcessors(
 			ConfigurableListableBeanFactory beanFactory, List<BeanFactoryPostProcessor> beanFactoryPostProcessors) {
 
@@ -134,9 +136,12 @@ final class PostProcessorRegistrationDelegate {
 				invokeBeanDefinitionRegistryPostProcessors(currentRegistryProcessors, registry);
 				currentRegistryProcessors.clear();
 			}
-
 			// Now, invoke the postProcessBeanFactory callback of all processors handled so far.
+			//之前执行的是子类的 postProcessBeanDefinitionRegistry 现在执行 BeanFactoryPostProcessors
+			// ConfigurationClassPostProcessor 类完成了 @Configuration 的类代理的创建(cglib增强)
+			// 该对标识了 @Configuration 的类增强造成了 与 标识了@Component的类在@Bean方法中调用的差异
 			invokeBeanFactoryPostProcessors(registryProcessors, beanFactory);
+
 			invokeBeanFactoryPostProcessors(regularPostProcessors, beanFactory);
 		}
 
@@ -200,7 +205,7 @@ final class PostProcessorRegistrationDelegate {
 	public static void registerBeanPostProcessors(
 			ConfigurableListableBeanFactory beanFactory, AbstractApplicationContext applicationContext) {
 
-		String[] postProcessorNames = beanFactory.getBeanNamesForType(BeanPostProcessor.class, true, false);
+		String[] postProcessorNames = beanFactory.getBeanNamesForType(BeanPostProcessor.class, true, false); //根据类型获取到Bean后置处理器
 
 		// Register BeanPostProcessorChecker that logs an info message when
 		// a bean is created during BeanPostProcessor instantiation, i.e. when

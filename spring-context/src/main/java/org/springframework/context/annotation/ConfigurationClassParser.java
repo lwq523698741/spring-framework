@@ -317,7 +317,7 @@ class ConfigurationClassParser {
 			}
 		}
 
-		// Process individual @Bean methods
+		// 处理单个@Bean方法 ,将其放到 配置文件的抽象对象 ConfigurationClass 中的 BeanMethod 中 ,后面再用 配置文件读取器的方法 loadBeanDefinitions将 BeanMethod 转换为
 		Set<MethodMetadata> beanMethods = retrieveBeanMethodMetadata(sourceClass);
 		for (MethodMetadata methodMetadata : beanMethods) {
 			configClass.addBeanMethod(new BeanMethod(methodMetadata, configClass));
@@ -395,9 +395,9 @@ class ConfigurationClassParser {
 		AnnotationMetadata original = sourceClass.getMetadata();
 		Set<MethodMetadata> beanMethods = original.getAnnotatedMethods(Bean.class.getName());
 		if (beanMethods.size() > 1 && original instanceof StandardAnnotationMetadata) {
-			// Try reading the class file via ASM for deterministic declaration order...
-			// Unfortunately, the JVM's standard reflection returns methods in arbitrary
-			// order, even between different runs of the same application on the same JVM.
+			// Try reading the class file via ASM for deterministic declaration order...尝试通过ASM读取类文件以获得确定性声明顺序...
+			// Unfortunately, the JVM's standard reflection returns methods in arbitrary 不幸的是，JVM的标准反射以任意顺序返回方法
+			// order, even between different runs of the same application on the same JVM. 即使在同一JVM上同一应用程序的不同运行之间也是如此。
 			try {
 				AnnotationMetadata asm =
 						this.metadataReaderFactory.getMetadataReader(original.getClassName()).getAnnotationMetadata();

@@ -2,6 +2,7 @@ import com.sanza.config.Config;
 import com.sanza.dto.Bean1;
 import com.sanza.dto.Bean2;
 import com.sanza.dto.Bean3;
+import org.springframework.cglib.proxy.Enhancer;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
@@ -23,6 +24,7 @@ public class MainTest {
 		AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(Config.class);
 		final Bean2 bean = context.getBean(Bean2.class);
 		bean.ioc();
+		//Enhancer enhancer
 
 
 	}

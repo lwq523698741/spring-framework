@@ -75,7 +75,7 @@ class ConfigurationClassEnhancer {
 	// The callbacks to use. Note that these callbacks must be stateless.
 	private static final Callback[] CALLBACKS = new Callback[] {
 			new BeanMethodInterceptor(),
-			new BeanFactoryAwareMethodInterceptor(),
+			new BeanFactoryAwareMethodInterceptor(), //之前策略已经加入一个BeanFactory的空属性,再创建一个BeanFactory对象填充到代理对象中去
 			NoOp.INSTANCE
 	};
 
@@ -95,6 +95,8 @@ class ConfigurationClassEnhancer {
 	 * @return the enhanced subclass
 	 */
 	public Class<?> enhance(Class<?> configClass, @Nullable ClassLoader classLoader) {
+		//因为cglib使用了 EnhancedConfiguration 作为增强接口,所以Spring生成的代理类都会实现于EnhancedConfiguration
+		//所以得知实现了 EnhancedConfiguration 的就是已经生成的代理类
 		if (EnhancedConfiguration.class.isAssignableFrom(configClass)) {
 			if (logger.isDebugEnabled()) {
 				logger.debug(String.format("Ignoring request to enhance %s as it has " +
@@ -105,8 +107,8 @@ class ConfigurationClassEnhancer {
 						configClass.getName()));
 			}
 			return configClass;
-		}
-		Class<?> enhancedClass = createClass(newEnhancer(configClass, classLoader));
+		}									//增强看这里
+		Class<?> enhancedClass = createClass(newEnhancer(configClass, classLoader)); //创建一个代理类
 		if (logger.isTraceEnabled()) {
 			logger.trace(String.format("Successfully enhanced %s; enhanced class name is: %s",
 					configClass.getName(), enhancedClass.getName()));
@@ -123,8 +125,8 @@ class ConfigurationClassEnhancer {
 		enhancer.setInterfaces(new Class<?>[] {EnhancedConfiguration.class});
 		enhancer.setUseFactory(false);
 		enhancer.setNamingPolicy(SpringNamingPolicy.INSTANCE);
-		enhancer.setStrategy(new BeanFactoryAwareGeneratorStrategy(classLoader));
-		enhancer.setCallbackFilter(CALLBACK_FILTER);
+		enhancer.setStrategy(new BeanFactoryAwareGeneratorStrategy(classLoader)); //指定了生成策略,可以动态添加字段
+		enhancer.setCallbackFilter(CALLBACK_FILTER); //添加了 多个 拦截器 相关接口,对原代理的规则制定就是依赖在这里
 		enhancer.setCallbackTypes(CALLBACK_FILTER.getCallbackTypes());
 		return enhancer;
 	}
@@ -216,6 +218,10 @@ class ConfigurationClassEnhancer {
 			this.classLoader = classLoader;
 		}
 
+		/*
+			transform 这个方法可以使这个动态生成的类可以动态的添加字段
+			一个名为 BeanFactory $$beanFactory 的属性
+		 */
 		@Override
 		protected ClassGenerator transform(ClassGenerator cg) throws Exception {
 			ClassEmitterTransformer transformer = new ClassEmitterTransformer() {
@@ -312,14 +318,14 @@ class ConfigurationClassEnhancer {
 		 * super implementation of the proxied method i.e., the actual {@code @Bean} method
 		 */
 		@Override
-		@Nullable
+		@Nullable // 切面方法
 		public Object intercept(Object enhancedConfigInstance, Method beanMethod, Object[] beanMethodArgs,
 					MethodProxy cglibMethodProxy) throws Throwable {
-
+			//获取到bean工厂
 			ConfigurableBeanFactory beanFactory = getBeanFactory(enhancedConfigInstance);
 			String beanName = BeanAnnotationHelper.determineBeanNameFor(beanMethod);
 
-			// Determine whether this bean is a scoped-proxy
+			// 确定此bean是否为作用域代理 Determine whether this bean is a scoped-proxy
 			if (BeanAnnotationHelper.isScopedProxy(beanMethod)) {
 				String scopedBeanName = ScopedProxyCreator.getTargetBeanName(beanName);
 				if (beanFactory.isCurrentlyInCreation(scopedBeanName)) {
@@ -345,7 +351,17 @@ class ConfigurationClassEnhancer {
 					return enhanceFactoryBean(factoryBean, beanMethod.getReturnType(), beanFactory, beanName);
 				}
 			}
-
+ 			// 这个判断很有趣,逻辑稍微有点复杂
+			/*
+				建立场景,当 @Configuration 配置的类有多个 @Bean 注释的方法,
+				1.首先 @Bean 注释的方法都是被 Spring cglib 加强过方法,也就是说调用会进入切面,这个切面 被定义为 使用拦截器 ,
+					拦截器是依靠了 Spring 的cglib类添加了 拦截器类 Enhancer 对它添加了两个拦截器,其中一个就是这个内部类,运行起来就进入这个方法
+				2. 有标注了 @Bean 的 getA() 方法 与 getB() 两个方法 ,其中 getB()在业务代码中调用了 getA()
+				3. 第一步,当运行 getA() 获得实例化的Bean A前,记录了实例化调用的方法是 getA(),然后进入该切面,这个判断对比记录返回肯定是 true ,执行原业务.切面结束
+				4. 第二步,当运行 getB() 获取实例化的Bean B前,记录了实例化调用的方法是 getB(),然后进入该切面,这个判断对比记录返回也是 true,执行业务代码
+					执行业务时,运行到 getA() ,会进入 getA()的切面,这是来到这个判断,对比实例化调用的方法 getB() ,就返回了 false,进入resolveBeanReference()
+					这个方法的逻辑是是第一步看的实例 getA() 对应的实例在不在,不在就创建,在就直接返回该.
+			 */
 			if (isCurrentlyInvokedFactoryMethod(beanMethod)) {
 				// The factory is calling the bean method in order to instantiate and register the bean
 				// (i.e. via a getBean() call) -> invoke the super implementation of the method to actually
@@ -360,7 +376,7 @@ class ConfigurationClassEnhancer {
 									"these container lifecycle issues; see @Bean javadoc for complete details.",
 							beanMethod.getDeclaringClass().getSimpleName(), beanMethod.getName()));
 				}
-				return cglibMethodProxy.invokeSuper(enhancedConfigInstance, beanMethodArgs);
+				return cglibMethodProxy.invokeSuper(enhancedConfigInstance, beanMethodArgs); //调用原业务
 			}
 
 			return resolveBeanReference(beanMethod, beanMethodArgs, beanFactory, beanName);

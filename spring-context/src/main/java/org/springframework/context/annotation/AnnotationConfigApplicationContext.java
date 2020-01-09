@@ -64,10 +64,13 @@ public class AnnotationConfigApplicationContext extends GenericApplicationContex
 	 */
 	public AnnotationConfigApplicationContext() {
 		//调用父类 GenericApplicationContext的构造器建立 Spring容器
+		//spring完成扫描主要是依靠ClassPathBeanDefinitionScanner这个类的对象，但是AnnotatedBeanDefinitionReader可以替代他完成相同的注解解析，意思就是通过ClassPathBeanDefinitionScanner扫描出来的类A和通过AnnotatedBeanDefinitionReader显示注册的类A在spring内部会一套相同的解析规则；
 		super();
-		//解析 @Configuration
+		//解析
+		//1、主要是可以动态、显示的注册一个bean；2、而且具备解析一个类的功能；和扫描解析一个类的功能相同
+		// 配置类就是通过 他的 register() 方法手动注册到其中
 		this.reader = new AnnotatedBeanDefinitionReader(this);
-		//提供API动态扫描注解器作为扫描器的实现类
+		//
 		this.scanner = new ClassPathBeanDefinitionScanner(this);
 	}
 
@@ -92,7 +95,7 @@ public class AnnotationConfigApplicationContext extends GenericApplicationContex
 		this();
 		//注册配置类
 		register(componentClasses);
-		//注册其他bean
+		//初始化方法
 		refresh();
 	}
 

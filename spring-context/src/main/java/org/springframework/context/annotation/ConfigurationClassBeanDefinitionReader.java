@@ -117,7 +117,7 @@ class ConfigurationClassBeanDefinitionReader {
 	public void loadBeanDefinitions(Set<ConfigurationClass> configurationModel) {
 		TrackedConditionEvaluator trackedConditionEvaluator = new TrackedConditionEvaluator();
 		for (ConfigurationClass configClass : configurationModel) {
-			loadBeanDefinitionsForConfigurationClass(configClass, trackedConditionEvaluator);
+			loadBeanDefinitionsForConfigurationClass(configClass, trackedConditionEvaluator); //遍历每一个配置文件的信息,包括将 @Bean 的方法创建 BeanDefinition 放入 BeanDefinitionMap中
 		}
 	}
 
@@ -140,7 +140,7 @@ class ConfigurationClassBeanDefinitionReader {
 		if (configClass.isImported()) {
 			registerBeanDefinitionForImportedConfigurationClass(configClass);
 		}
-		for (BeanMethod beanMethod : configClass.getBeanMethods()) {
+		for (BeanMethod beanMethod : configClass.getBeanMethods()) { //遍历配置类中读取到的 @Bean 方法
 			loadBeanDefinitionsForBeanMethod(beanMethod);
 		}
 
@@ -210,7 +210,7 @@ class ConfigurationClassBeanDefinitionReader {
 			}
 			return;
 		}
-
+		//将配置类中的 @Bean 方法的结果转为 ConfigurationClassBeanDefinition
 		ConfigurationClassBeanDefinition beanDef = new ConfigurationClassBeanDefinition(configClass, metadata);
 		beanDef.setResource(configClass.getResource());
 		beanDef.setSource(this.sourceExtractor.extractSource(metadata, configClass.getResource()));
@@ -226,9 +226,9 @@ class ConfigurationClassBeanDefinitionReader {
 			beanDef.setUniqueFactoryMethodName(methodName);
 		}
 		else {
-			// instance @Bean method
-			beanDef.setFactoryBeanName(configClass.getBeanName());
-			beanDef.setUniqueFactoryMethodName(methodName);
+			// instance @Bean method   值是 配置类的 beanName
+			beanDef.setFactoryBeanName(configClass.getBeanName()); //这里很关键,当 BeanDefinition 设置了 FactoryBeanName 值不为空后,就会不走构造器构建类,而是使用反射 Method方法进行实例化
+			beanDef.setUniqueFactoryMethodName(methodName); //这里 设置了方法名,不是全名,就简单的方法名,
 		}
 
 		if (metadata instanceof StandardMethodMetadata) {
@@ -284,7 +284,7 @@ class ConfigurationClassBeanDefinitionReader {
 			logger.trace(String.format("Registering bean definition for @Bean method %s.%s()",
 					configClass.getMetadata().getClassName(), beanName));
 		}
-		this.registry.registerBeanDefinition(beanName, beanDefToRegister);
+		this.registry.registerBeanDefinition(beanName, beanDefToRegister); //注册到map中
 	}
 
 	protected boolean isOverriddenByExistingDefinition(BeanMethod beanMethod, String beanName) {

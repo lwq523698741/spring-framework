@@ -82,9 +82,9 @@ public class RootBeanDefinition extends AbstractBeanDefinition {
 	@Nullable
 	volatile ResolvableType factoryMethodReturnType;
 
-	/** Package-visible field for caching a unique factory method candidate for introspection. */
+	/** Package-visible field for caching a unique factory method candidate for introspection. 程序包可见的字段， */
 	@Nullable
-	volatile Method factoryMethodToIntrospect;
+	volatile Method factoryMethodToIntrospect; //用于缓存唯一的工厂方法供内省
 
 	/** Common lock for the four constructor fields below. */
 	final Object constructorArgumentLock = new Object();
