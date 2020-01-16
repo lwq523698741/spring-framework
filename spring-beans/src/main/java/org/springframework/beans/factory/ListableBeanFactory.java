@@ -29,6 +29,9 @@ import org.springframework.lang.Nullable;
  * by name one by one as requested by clients. BeanFactory implementations that
  * preload all their bean definitions (such as XML-based factories) may implement
  * this interface.
+ * 扩展了BeanFactory接口,提供了对bean的枚举能力(枚举是列出某些有穷序列集的所有成员的程序,通俗的讲就是根据type或name这个标识返回对应的有穷集合),
+ * //即可以返回bean的实例集合,而不用像BeanFactory只能返回单个bean的实例
+ * //注意:如果存在父容器的话该接口不会考虑父容器中的bean,只会返回当前容器中的bean
  *
  * <p>If this is a {@link HierarchicalBeanFactory}, the return values will <i>not</i>
  * take any BeanFactory hierarchy into account, but will relate only to the beans

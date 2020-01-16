@@ -19,6 +19,7 @@ package org.springframework.beans.factory;
 import org.springframework.lang.Nullable;
 
 /**
+ * 扩展了BeanFactory接口,提供了对父容器的访问功能
  * Sub-interface implemented by bean factories that can be part
  * of a hierarchy.
  *

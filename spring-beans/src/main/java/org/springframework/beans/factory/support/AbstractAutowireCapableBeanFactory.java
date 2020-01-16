@@ -1197,7 +1197,7 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 		if (instanceSupplier != null) {
 			return obtainFromSupplier(instanceSupplier, beanName);
 		}
-		// 配置类的 @Bean,不去找构造器,而通过是通过这地方实例化出来的
+		// 配置类的 @Bean,不去找构造器,而通过是通过获取工厂方法实例化出来的
 		if (mbd.getFactoryMethodName() != null) {
 			return instantiateUsingFactoryMethod(beanName, mbd, args); //配置类实例化,会到这里进去
 		}

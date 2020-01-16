@@ -23,13 +23,14 @@ public class Config {
 	}
 	@Bean
 	public Bean3 getBean3() {
+		//System.out.println("getBean3");
+		final Bean4 bean4 = getBean4();
 		return new Bean3();
 	}
 
 	@Bean
 	public Bean4 getBean4() {
-		final Bean3 bean3 = getBean3();
-		System.out.println("1");
+		//System.out.println("getBean4");
 		return new Bean4();
 	}
 }

@@ -405,7 +405,7 @@ class ConfigurationClassEnhancer {
 							break;
 						}
 					}
-				}
+				} // getBean内部复杂,如果内部没有bean,他将创建Bean
 				Object beanInstance = (useArgs ? beanFactory.getBean(beanName, beanMethodArgs) :
 						beanFactory.getBean(beanName));
 				if (!ClassUtils.isAssignableValue(beanMethod.getReturnType(), beanInstance)) {
