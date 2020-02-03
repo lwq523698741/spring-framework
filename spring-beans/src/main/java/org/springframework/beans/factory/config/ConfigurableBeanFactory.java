@@ -34,7 +34,11 @@ import org.springframework.util.StringValueResolver;
  * Configuration interface to be implemented by most bean factories. Provides
  * facilities to configure a bean factory, in addition to the bean factory
  * client methods in the {@link org.springframework.beans.factory.BeanFactory}
- * interface. 拓展提供了用于配置bean工厂的工具
+ * interface.
+ * 扩展了HierarchicalBeanFactory,并提供了对容器的配置能力
+ * 拓展提供了用于配置bean工厂的工具
+ * 该接口扩展的内容较多,比如类加载器,类型转化,属性编辑器,BeanPostProcessor,
+ * 作用域,bean定义,处理bean依赖关系,合并其他ConfigurableBeanFactory,bean如何销毁等
  *
  * <p>This bean factory interface is not meant to be used in normal application
  * code: Stick to {@link org.springframework.beans.factory.BeanFactory} or
@@ -116,6 +120,8 @@ public interface ConfigurableBeanFactory extends HierarchicalBeanFactory, Single
 	ClassLoader getTempClassLoader();
 
 	/**
+	 *   设置是否缓存bean元数据，例如给定的bean定义（以合并方式）和已解析的bean类。默认打开。
+	 *    关闭此标志以启用bean定义对象的热刷新，特别是bean类。如果此标志关闭，则任何bean实例的创建都将为新解析的类重新查询bean类加载器。
 	 * Set whether to cache bean metadata such as given bean definitions
 	 * (in merged fashion) and resolved bean classes. Default is on.
 	 * <p>Turn this flag off to enable hot-refreshing of bean definition objects
@@ -327,6 +333,7 @@ public interface ConfigurableBeanFactory extends HierarchicalBeanFactory, Single
 	BeanDefinition getMergedBeanDefinition(String beanName) throws NoSuchBeanDefinitionException;
 
 	/**
+	 * 确定具有给定名称的bean是否为FactoryBean。
 	 * Determine whether the bean with the given name is a FactoryBean.
 	 * @param name the name of the bean to check
 	 * @return whether the bean is a FactoryBean
@@ -337,6 +344,7 @@ public interface ConfigurableBeanFactory extends HierarchicalBeanFactory, Single
 	boolean isFactoryBean(String name) throws NoSuchBeanDefinitionException;
 
 	/**
+	 * 显式控制指定bean的当前创建状态。仅限容器内部使用。
 	 * Explicitly control the current in-creation status of the specified bean.
 	 * For container-internal use only.
 	 * @param beanName the name of the bean
@@ -346,7 +354,7 @@ public interface ConfigurableBeanFactory extends HierarchicalBeanFactory, Single
 	void setCurrentlyInCreation(String beanName, boolean inCreation);
 
 	/**
-	 * Determine whether the specified bean is currently in creation.
+	 * 确定指定的bean当前是否正在创建。 Determine whether the specified bean is currently in creation.
 	 * @param beanName the name of the bean
 	 * @return whether the bean is currently in creation
 	 * @since 2.5
@@ -354,7 +362,7 @@ public interface ConfigurableBeanFactory extends HierarchicalBeanFactory, Single
 	boolean isCurrentlyInCreation(String beanName);
 
 	/**
-	 * Register a dependent bean for the given bean,
+	 * 为给定的bean注册一个依赖bean，在销毁给定bean之前销毁它。 Register a dependent bean for the given bean,
 	 * to be destroyed before the given bean is destroyed.
 	 * @param beanName the name of the bean
 	 * @param dependentBeanName the name of the dependent bean

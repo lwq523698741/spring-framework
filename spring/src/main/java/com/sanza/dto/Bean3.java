@@ -1,5 +1,7 @@
 package com.sanza.dto;
 
+import org.springframework.stereotype.Component;
+
 /**
  * @program: spring
  * @description:

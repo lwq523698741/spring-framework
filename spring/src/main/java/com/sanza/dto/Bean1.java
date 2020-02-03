@@ -20,8 +20,8 @@ import javax.annotation.PreDestroy;
 @Component
 public class Bean1  {
 
-	@Autowired
-	Bean2 bean2;
+	//@Autowired
+	//Bean2 bean2;
 
 	/*public Bean1(Bean2 bean2) {
 		System.out.println("Bean1的构造器");
@@ -63,10 +63,5 @@ public class Bean1  {
 		System.out.println("Bean1的构造器");
 	}
 
-	@Override
-	public String toString() {
-		return "Bean1{" +
-				"bean2=" + bean2 +
-				'}';
-	}
+
 }

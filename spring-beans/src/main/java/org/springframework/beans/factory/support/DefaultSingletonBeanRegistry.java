@@ -60,7 +60,7 @@ import org.springframework.util.StringUtils;
  * {@link AbstractBeanFactory} and {@link DefaultListableBeanFactory}
  * (which inherit from it). Can alternatively also be used as a nested
  * helper to delegate to.
- *
+ * 实现单例与DisposableBean的生命周期管理(创建,维护,销毁)
  * @author Juergen Hoeller
  * @since 2.0
  * @see #registerSingleton
@@ -76,7 +76,7 @@ public class DefaultSingletonBeanRegistry extends SimpleAliasRegistry implements
 	/**  二级缓存 Cache of singleton factories: bean name to ObjectFactory. */
 	private final Map<String, ObjectFactory<?>> singletonFactories = new HashMap<>(16);
 	// 设立三级缓存 earlySingletonObjects 的意义在 二级缓存 singletonFactories 每次得到 Bean 都需要重新执行工厂方法,而三级缓存本身存的就是Bean,返回效率高
-	/**  三级缓存 Cache of early singleton objects: bean name to bean instance. */
+	/**  三级缓存 提前曝光的Bean ,处于提前曝光状态的bean还没完成属性填充 Cache of early singleton objects: bean name to bean instance. */
 	private final Map<String, Object> earlySingletonObjects = new HashMap<>(16);
 
 	/** Set of registered singletons, containing the bean names in registration order. */

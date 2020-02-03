@@ -20,17 +20,24 @@ import javax.annotation.PreDestroy;
 @Component
 public class Bean2  {
 
-	@Autowired
+	//@Autowired
 	Bean1 bean1;
 
-	/*public Bean2(Bean1 bean1) {
+	@Autowired
+	public Bean2(Bean1 bean1) {
 		System.out.println("Bean2 构造器");
 		this.bean1 = bean1;
-	}*/
-
-	public Bean2() {
-		System.out.println("Bean2 构造器");
 	}
+
+	//@Autowired
+	public Bean2(Bean1 bean1,Bean3 bean3) {
+		System.out.println("Bean2 构造器");
+		this.bean1 = bean1;
+	}
+
+	/*public Bean2() {
+		System.out.println("Bean2 构造器");
+	}*/
 
 	/*@Override
 	public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {

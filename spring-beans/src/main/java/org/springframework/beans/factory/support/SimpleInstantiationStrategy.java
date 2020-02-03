@@ -60,6 +60,8 @@ public class SimpleInstantiationStrategy implements InstantiationStrategy {
 	@Override
 	public Object instantiate(RootBeanDefinition bd, @Nullable String beanName, BeanFactory owner) {
 		// Don't override the class with CGLIB if no overrides.
+		//如果没有使用方法覆盖(replace-method或lookup-method注入),则直接使用反射创建bean的实例；
+		// 否则必须使用CGLIB机制。Spring通过instantiate方法来确定具体使用哪种机制。
 		if (!bd.hasMethodOverrides()) {
 			Constructor<?> constructorToUse;
 			synchronized (bd.constructorArgumentLock) {
@@ -84,11 +86,11 @@ public class SimpleInstantiationStrategy implements InstantiationStrategy {
 					}
 				}
 			}
-			return BeanUtils.instantiateClass(constructorToUse);
+			return BeanUtils.instantiateClass(constructorToUse);//使用反射机制实例化Bean
 		}
 		else {
-			// Must generate CGLIB subclass.
-			return instantiateWithMethodInjection(bd, beanName, owner);
+			// 必须生成CGLIB子类。 Must generate CGLIB subclass.
+			return instantiateWithMethodInjection(bd, beanName, owner); //使用CGLIB 生成子类的Class 但还是通过反射实例化 Bean
 		}
 	}
 

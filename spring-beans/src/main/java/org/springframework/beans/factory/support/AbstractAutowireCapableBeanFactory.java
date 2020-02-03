@@ -569,7 +569,7 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 			mbd.resolvedTargetType = beanType;
 		}
 
-		// 允许后处理器修改合并的bean定义。 Allow post-processors to modify the merged bean definition.
+		// 允许MergedBeanDefinitionPostProcessor后处理器修改已合并的bean定义。 Allow post-processors to modify the merged bean definition.
 		synchronized (mbd.postProcessingLock) {
 			if (!mbd.postProcessed) {
 				try {
@@ -1185,7 +1185,7 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 	 * @see #instantiateBean
 	 */
 	protected BeanWrapper createBeanInstance(String beanName, RootBeanDefinition mbd, @Nullable Object[] args) {
-		// Make sure bean class is actually resolved at this point.
+		// 确保此时确实解析了bean类。 Make sure bean class is actually resolved at this point.
 		Class<?> beanClass = resolveBeanClass(mbd, beanName);
 
 		if (beanClass != null && !Modifier.isPublic(beanClass.getModifiers()) && !mbd.isNonPublicAccessAllowed()) {
@@ -1212,30 +1212,39 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 					autowireNecessary = mbd.constructorArgumentsResolved;
 				}
 			}
-		}
+		}// 如果该bean已经被解析过
 		if (resolved) {
+			//使用已经解析过的构造函数实例化
 			if (autowireNecessary) {
 				return autowireConstructor(beanName, mbd, null, null); //自动注入构造器
 			}
+			// 使用默认无参构造函数实例化
 			else {
 				return instantiateBean(beanName, mbd);
 			}
 		}
 
-		// //获取构造器,并判断是否使用自动装填构造器 Candidate constructors for autowiring?
+		//获取构造器,并判断是否使用自动装填构造器 Candidate constructors for autowiring?
+
 		Constructor<?>[] ctors = determineConstructorsFromBeanPostProcessors(beanClass, beanName);
-		//实例化倒数第六 这里面如果发现构造器中存在有 依赖注入的Bean,那么会先去查看有无这个Bean,并创建这个Bean调用构造器
-		if (ctors != null || mbd.getResolvedAutowireMode() == AUTOWIRE_CONSTRUCTOR || mbd.hasConstructorArgumentValues() || !ObjectUtils.isEmpty(args)) {
+		//实例化倒数第六 这里面如果发现构造器是否是有参数构造器
+		// 存在有
+		// 操作构造器依赖注入的Bean,那么会先去查看有无这个Bean,并创建这个Bean调用构造器
+		if (ctors != null
+				|| mbd.getResolvedAutowireMode() == AUTOWIRE_CONSTRUCTOR
+				|| mbd.hasConstructorArgumentValues()
+				|| !ObjectUtils.isEmpty(args)) {
+			//解析构造函数,解析号之后之前
 			return autowireConstructor(beanName, mbd, ctors, args);
 		}
 
-		// Preferred constructors for default construction?
+		// 有首选构造函数？ Preferred constructors for default construction?
 		ctors = mbd.getPreferredConstructors();
 		if (ctors != null) {
 			return autowireConstructor(beanName, mbd, ctors, null);
 		}
 
-		// No special handling: simply use no-arg constructor.
+		// 无任何的特殊处理,则使用默认的无参构造函数实例化bean No special handling: simply use no-arg constructor.
 		return instantiateBean(beanName, mbd);
 	}
 
@@ -1328,12 +1337,14 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 		try {
 			Object beanInstance;
 			final BeanFactory parent = this;
+			// 1、如果权限管理器不为空,需要校验
 			if (System.getSecurityManager() != null) {
 				beanInstance = AccessController.doPrivileged((PrivilegedAction<Object>) () ->
 						getInstantiationStrategy().instantiate(mbd, beanName, parent),
 						getAccessControlContext());
 			}
 			else {
+				// 2、获取实例化策略并实例化bean
 				beanInstance = getInstantiationStrategy().instantiate(mbd, beanName, parent);
 			}
 			BeanWrapper bw = new BeanWrapperImpl(beanInstance);

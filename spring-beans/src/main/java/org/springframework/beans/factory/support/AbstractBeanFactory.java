@@ -303,18 +303,22 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 
 			try { // 合并beanDefinition,如果指定的bean是一个子bean的话,则遍历其所有的父bean
 				final RootBeanDefinition mbd = getMergedLocalBeanDefinition(beanName);
+				//检查合并的beanDefinition
 				checkMergedBeanDefinition(mbd, beanName, args);
 
 				// 使用 @getDependsOn注解提供的 ,确保当前bean依赖的bean的初始化。 Guarantee initialization of beans that the current bean depends on.
 				String[] dependsOn = mbd.getDependsOn();
 				if (dependsOn != null) {
+					// 循环所有的依赖bean,并递归实例化
 					for (String dep : dependsOn) {
 						if (isDependent(beanName, dep)) {
 							throw new BeanCreationException(mbd.getResourceDescription(), beanName,
 									"Circular depends-on relationship between '" + beanName + "' and '" + dep + "'");
 						}
+						//注册依赖
 						registerDependentBean(dep, beanName);
 						try {
+							// 实例化依赖的bean
 							getBean(dep);
 						}
 						catch (NoSuchBeanDefinitionException ex) {
@@ -325,7 +329,6 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 				}
 
 				// 如当前Bean是单例的,那么开始 创建Bean的实例 Create bean instance.
-				//
 				if (mbd.isSingleton()) { //getSingleton() 方法往 创建单例之前的Bean的集合 singletonsCurrentlyInCreation赋值了这个Bean
 					sharedInstance = getSingleton(beanName, () -> {
 						try {
@@ -341,7 +344,7 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 					});
 					bean = getObjectForBeanInstance(sharedInstance, name, beanName, mbd);
 				}
-
+				 // 创建原型模式bean
 				else if (mbd.isPrototype()) {
 					// It's a prototype -> create a new instance.
 					Object prototypeInstance = null;
@@ -1196,6 +1199,7 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 	 * @return the transformed bean name
 	 */
 	protected String transformedBeanName(String name) {
+		// 转换并规范beanName				//返回bean的真实名称,去掉FactoryBean引用前缀
 		return canonicalName(BeanFactoryUtils.transformedBeanName(name));
 	}
 

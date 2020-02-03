@@ -24,6 +24,10 @@ import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.lang.Nullable;
 
 /**
+ *
+ * 扩展了ListableBeanFactory, AutowireCapableBeanFactory, ConfigurableBeanFactory接口
+ * ,并提供了忽略依赖,自动装配判断,冻结bean的定义,枚举所有bean名称的功能
+ *
  * Configuration interface to be implemented by most listable bean factories.
  * In addition to {@link ConfigurableBeanFactory}, it provides facilities to
  * analyze and modify bean definitions, and to pre-instantiate singletons.

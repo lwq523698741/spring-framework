@@ -52,6 +52,7 @@ import org.springframework.lang.Nullable;
  * interface, which exposes the internal BeanFactory even when running in an
  * ApplicationContext, to get access to an AutowireCapableBeanFactory:
  * simply cast the passed-in BeanFactory to AutowireCapableBeanFactory.
+ * 扩展了BeanFactory接口,并提供了自动装配能力
  *
  * @author Juergen Hoeller
  * @since 04.12.2003
