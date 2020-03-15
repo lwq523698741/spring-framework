@@ -53,8 +53,11 @@ import org.springframework.util.Assert;
  */
 public class AnnotationConfigApplicationContext extends GenericApplicationContext implements AnnotationConfigRegistry {
 
+	//读取了被加了注解的Bean,将其解析
+		//还负责注册
 	private final AnnotatedBeanDefinitionReader reader;
 
+	//扫描器扫描加了注解的类
 	private final ClassPathBeanDefinitionScanner scanner;
 
 
@@ -68,9 +71,10 @@ public class AnnotationConfigApplicationContext extends GenericApplicationContex
 		super();
 		//解析
 		//1、主要是可以动态、显示的注册一个bean；2、而且具备解析一个类的功能；和扫描解析一个类的功能相同
+			// 说详细一点就是将类转换成 beanDefinition
 		// 配置类就是通过 他的 register() 方法手动注册到其中
 		this.reader = new AnnotatedBeanDefinitionReader(this);
-		//
+		//扫描器,将所有加了注解的类
 		this.scanner = new ClassPathBeanDefinitionScanner(this);
 	}
 
@@ -94,7 +98,7 @@ public class AnnotationConfigApplicationContext extends GenericApplicationContex
 		//调用自身构造器
 		this();
 		//注册配置类
-		register(componentClasses);
+		register(componentClasses); //注册功能可以用来注册一般的bean
 		//初始化方法
 		refresh();
 	}

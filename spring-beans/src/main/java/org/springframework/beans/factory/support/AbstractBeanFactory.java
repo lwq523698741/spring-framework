@@ -242,7 +242,8 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 	@SuppressWarnings("unchecked")
 	protected <T> T doGetBean(final String name, @Nullable final Class<T> requiredType,
 			@Nullable final Object[] args, boolean typeCheckOnly) throws BeansException {
-		//1、转换bean的名称,去掉&前缀,且如果bean有别名的话,优先使用别名
+		//1、转换bean的名称,去掉&前缀,代表是获取FactoryBean,因为Spring在保存FactoryBean本身时beanName没有这个&,要进行转换
+		//2、如果bean定义有别名的话, 根据别名 name 找到对应的 beanName
 		final String beanName = transformedBeanName(name);
 		Object bean;
 

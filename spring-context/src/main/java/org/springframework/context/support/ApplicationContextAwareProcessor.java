@@ -34,6 +34,7 @@ import org.springframework.lang.Nullable;
 import org.springframework.util.StringValueResolver;
 
 /**
+ * 这个类是负责获取到全局上下文对象,再根据 Bean 实现的接口不同设置进去全局上下文
  * {@link BeanPostProcessor} implementation that supplies the {@code ApplicationContext},
  * {@link org.springframework.core.env.Environment Environment}, or
  * {@link StringValueResolver} for the {@code ApplicationContext} to beans that
@@ -119,7 +120,7 @@ class ApplicationContextAwareProcessor implements BeanPostProcessor {
 		if (bean instanceof MessageSourceAware) {
 			((MessageSourceAware) bean).setMessageSource(this.applicationContext);
 		}
-		if (bean instanceof ApplicationContextAware) {
+		if (bean instanceof ApplicationContextAware) { //当类实现了 ApplicationContextAware 接口 ,就可以通过 setApplicationContext 方法获取到 全局上下文
 			((ApplicationContextAware) bean).setApplicationContext(this.applicationContext);
 		}
 	}

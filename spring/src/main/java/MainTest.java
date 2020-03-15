@@ -12,11 +12,10 @@ import java.io.IOException;
  **/
 public class MainTest {
 
-	public static void main(String[] args) throws IOException {
+	public static void main(String[] args) {
 		AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(Config.class);
 		final HandleInvoke bean = context.getBean(HandleInvoke.class);
+
 		context.close();
-
-
 	}
 }

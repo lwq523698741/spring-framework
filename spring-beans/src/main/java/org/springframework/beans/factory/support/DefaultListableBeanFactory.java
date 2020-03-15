@@ -152,7 +152,7 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 	/** Whether to allow eager class loading even for lazy-init beans. */
 	private boolean allowEagerClassLoading = true;
 
-	/** Optional OrderComparator for dependency Lists and arrays. */
+	/** Optional OrderComparator for dependency Lists and arrays. 比较器*/
 	@Nullable
 	private Comparator<Object> dependencyComparator;
 
@@ -163,7 +163,7 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 	private final Map<Class<?>, Object> resolvableDependencies = new ConcurrentHashMap<>(16);
 
 	/** Map of bean definition objects, keyed by bean name.
-	 * 这个就是 类模型的 集合
+	 * 这个是bean定义类的集合
 	 * */
 	private final Map<String, BeanDefinition> beanDefinitionMap = new ConcurrentHashMap<>(256);
 
@@ -415,7 +415,8 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 
 	@Nullable
 	private <T> T resolveBean(ResolvableType requiredType, @Nullable Object[] args, boolean nonUniqueAsNull) {
-		NamedBeanHolder<T> namedBean = resolveNamedBean(requiredType, args, nonUniqueAsNull); //将class得到 beanDefinitionNames 对应的 beanDefinitionName ,然后调用doGetBean方法
+		//将class得到 beanDefinitionNames 对应的 beanDefinitionName ,然后调用doGetBean方法
+		NamedBeanHolder<T> namedBean = resolveNamedBean(requiredType, args, nonUniqueAsNull);
 		if (namedBean != null) {
 			return namedBean.getBeanInstance();
 		}
@@ -954,7 +955,7 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 			this.beanDefinitionMap.put(beanName, beanDefinition);
 		}
 		else {
-			if (hasBeanCreationStarted()) {
+			if (hasBeanCreationStarted()) { //查看有没有Bean已经被创建了,来判断是不是处于初始注册阶段
 				// Cannot modify startup-time collection elements anymore (for stable iteration)
 				synchronized (this.beanDefinitionMap) {
 					this.beanDefinitionMap.put(beanName, beanDefinition);
@@ -966,10 +967,10 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 				}
 			}
 			else {
-				// Still in startup registration phase
+				// 仍处于启动注册阶段 Still in startup registration phase
 				this.beanDefinitionMap.put(beanName, beanDefinition);
 				this.beanDefinitionNames.add(beanName);
-				removeManualSingletonName(beanName);
+				removeManualSingletonName(beanName); //过度用的,主要拿来去重
 			}
 			this.frozenBeanDefinitionNames = null;
 		}
@@ -1161,7 +1162,7 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 			Map<String, Object> candidates = new LinkedHashMap<>(candidateNames.length);
 			for (String beanName : candidateNames) {
 				if (containsSingleton(beanName) && args == null) {
-					Object beanInstance = getBean(beanName);
+					Object beanInstance = getBean(beanName); //doGetBean
 					candidates.put(beanName, (beanInstance instanceof NullBean ? null : beanInstance));
 				}
 				else {
